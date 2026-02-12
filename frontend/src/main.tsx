@@ -6,7 +6,12 @@ import { ClerkProvider } from "@clerk/clerk-react";
 import { BrowserRouter } from "react-router-dom";
 import AuthProvider from "./providers/AuthProvider.tsx";
 
+
 const PUBLISHABLE_KEY = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
+
+if (!PUBLISHABLE_KEY) {
+  throw new Error('Missing Publishable Key')
+}
 
 if (!PUBLISHABLE_KEY) {
 	throw new Error("Missing Publishable Key");
