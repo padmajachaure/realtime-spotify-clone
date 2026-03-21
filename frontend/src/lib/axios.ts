@@ -1,6 +1,9 @@
 import axios from "axios";
+import { useAuth } from "@clerk/clerk-react";
 
-export const axiosInstance = axios.create({
-	baseURL: import.meta.env.MODE === "development" ? "http://localhost:5000/api" : "https://realtime-spotify-clone-2-isku.onrender.com/api",
+const axiosInstance = axios.create({
+  baseURL: "https://realtime-spotify-clone-2-isku.onrender.com",
+  withCredentials: true,
 });
 
+export default axiosInstance;

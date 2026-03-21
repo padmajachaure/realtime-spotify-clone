@@ -24,10 +24,12 @@ interface ChatStore {
 
 const baseURL = import.meta.env.MODE === "development" ? "http://localhost:5000" : "/";
 
-const socket = io(baseURL, {
-	autoConnect: false, // only connect if user is authenticated
-	withCredentials: true,
+const socket = io("https://realtime-spotify-clone-2-isku.onrender.com", {
+  transports: ["websocket"],
+  withCredentials: true,
 });
+
+export default socket;
 
 export const useChatStore = create<ChatStore>((set, get) => ({
 	users: [],
