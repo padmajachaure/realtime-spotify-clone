@@ -6,7 +6,7 @@ export const initializeSocket = (server) => {
     cors: {
       origin: [
         "http://localhost:3000",
-        "https://realtime-spotify-clone-n68apnbia-padmaja-chaures-projects.vercel.app"
+        "https://realtime-spotify-clone-4svc3w6kx-padmaja-chaures-projects.vercel.app"
       ],
       credentials: true,
     },
