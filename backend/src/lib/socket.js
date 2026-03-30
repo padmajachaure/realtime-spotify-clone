@@ -12,58 +12,66 @@ export const initializeSocket = (server) => {
     },
   });
 
-  const userSockets = new Map();
-  const userActivities = new Map();
+  const userSockets = new Map(); // { userId: socketId}
+	const userActivities = new Map(); // {userId: activity}
 
-  io.on("connection", (socket) => {
-    console.log("User connected:", socket.id);
+	io.on("connection", (socket) => {
+		socket.on("user_connected", (userId) => {
+			userSockets.set(userId, socket.id);
+			userActivities.set(userId, "Idle");
 
-    socket.on("user_connected", (userId) => {
-      userSockets.set(userId, socket.id);
-      userActivities.set(userId, "Idle");
+			// broadcast to all connected sockets that this user just logged in
+			io.emit("user_connected", userId);
 
-      io.emit("user_connected", userId);
-      socket.emit("users_online", Array.from(userSockets.keys()));
-      io.emit("activities", Array.from(userActivities.entries()));
-    });
+			socket.emit("users_online", Array.from(userSockets.keys()));
 
-    socket.on("send_message", async ({ senderId, receiverId, content }) => {
-      try {
-        const message = await Message.create({
-          senderId,
-          receiverId,
-          content,
-        });
+			io.emit("activities", Array.from(userActivities.entries()));
+		});
 
-        const receiverSocketId = userSockets.get(receiverId);
+		socket.on("update_activity", ({ userId, activity }) => {
+			console.log("activity updated", userId, activity);
+			userActivities.set(userId, activity);
+			io.emit("activity_updated", { userId, activity });
+		});
 
-        if (receiverSocketId) {
-          io.to(receiverSocketId).emit("receive_message", message);
-        }
+		socket.on("send_message", async (data) => {
+			try {
+				const { senderId, receiverId, content } = data;
 
-        socket.emit("message_sent", message);
-      } catch (err) {
-        console.log(err);
-      }
-    });
+				const message = await Message.create({
+					senderId,
+					receiverId,
+					content,
+				});
 
-    socket.on("disconnect", () => {
-      let disconnectedUser;
+				// send to receiver in realtime, if they're online
+				const receiverSocketId = userSockets.get(receiverId);
+				if (receiverSocketId) {
+					io.to(receiverSocketId).emit("receive_message", message);
+				}
 
-      for (const [userId, socketId] of userSockets.entries()) {
-        if (socketId === socket.id) {
-          disconnectedUser = userId;
-          userSockets.delete(userId);
-          userActivities.delete(userId);
-          break;
-        }
-      }
+				socket.emit("message_sent", message);
+			} catch (error) {
+				console.error("Message error:", error);
+				socket.emit("message_error", error.message);
+			}
+		});
 
-      if (disconnectedUser) {
-        io.emit("user_disconnected", disconnectedUser);
-      }
-    });
-  });
-
+		socket.on("disconnect", () => {
+			let disconnectedUserId;
+			for (const [userId, socketId] of userSockets.entries()) {
+				// find disconnected user
+				if (socketId === socket.id) {
+					disconnectedUserId = userId;
+					userSockets.delete(userId);
+					userActivities.delete(userId);
+					break;
+				}
+			}
+			if (disconnectedUserId) {
+				io.emit("user_disconnected", disconnectedUserId);
+			}
+		});
+	});
   return io;
 };
