@@ -22,13 +22,17 @@ interface ChatStore {
 	setSelectedUser: (user: User | null) => void;
 }
 
-const baseURL = import.meta.env.MODE === "development" ? "http://localhost:5000" : "/";
+const baseURL =
+  import.meta.env.MODE === "development"
+    ? "http://localhost:5000"
+    : "https://realtime-spotify-clone-3-ehos.onrender.com/";
 
-const socket = io(baseURL, {
-	autoConnect: false, // only connect if user is authenticated
-	withCredentials: true,
-});
-
+	
+		const socket = io(baseURL, {
+		autoConnect: false,
+		withCredentials: true,
+		transports: ["websocket"], // 🔥 important for Render
+		});
 export const useChatStore = create<ChatStore>((set, get) => ({
 	users: [],
 	isLoading: false,
