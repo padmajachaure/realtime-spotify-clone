@@ -29,7 +29,7 @@ initializeSocket(httpServer);
 
 app.use(
   cors({
-    origin: ["http://localhost:3000", "https://realtime-spotify-clone-n8lz2fiz1-padmaja-chaures-projects.vercel.app"],
+    origin: ["http://localhost:3000", "https://realtime-spotify-clone-euyxwvnx7-padmaja-chaures-projects.vercel.app"],
     credentials: true,
   })
 );
